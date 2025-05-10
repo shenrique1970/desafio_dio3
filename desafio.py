@@ -26,7 +26,7 @@ class Cliente:
         self.contas.append(conta)
 
 
-# Pessoa herda de Cliente
+# Pessoa herda de Cliente (filha)
 class PessoaFisica(Cliente):
     def __init__(self, nome, data_nascimento, cpf, endereco):
         super().__init__(endereco)
@@ -35,66 +35,64 @@ class PessoaFisica(Cliente):
         self.cpf = cpf
 
 
+# Classe que representa uma conta bancária (pai)
 class Conta:
     def __init__(self, numero, cliente):
-        self._saldo = 0
-        self._numero = numero
-        self._agencia = "0001"
-        self._cliente = cliente
-        self._historico = Historico()
+        self._saldo = 0  # Inicializa o saldo da conta como 0
+        self._numero = numero  # Armazena o número da conta
+        self._agencia = "0001"  # Define a agência da conta
+        self._cliente = cliente  # Armazena o cliente associado à conta
+        self._historico = Historico()  # Cria um objeto Historico para armazenar transações
 
     @classmethod
     def nova_conta(cls, cliente, numero):
-        return cls(numero, cliente)
-
+        # Método de classe que cria uma nova conta
+        return cls(numero, cliente)  # Retorna uma nova instância de Conta
     @property
     def saldo(self):
-        return self._saldo
-
+        return self._saldo  # Retorna o saldo da conta
     @property
     def numero(self):
-        return self._numero
+        return self._numero  # Retorna o número da conta
 
     @property
     def agencia(self):
-        return self._agencia
-
+        return self._agencia  # Retorna a agência da conta
     @property
     def cliente(self):
-        return self._cliente
+        return self._cliente  # Retorna o cliente associado à conta
 
     @property
     def historico(self):
-        return self._historico
+        return self._historico  # Retorna o histórico de transações da conta
 
     def sacar(self, valor_input):
-        saldo = self.saldo
-        excedeu_saldo = valor_input > saldo
+        # Método para realizar um saque
+        saldo = self.saldo  # Obtém o saldo atual da conta
+        excedeu_saldo = valor_input > saldo  # Verifica se o valor do saque excede o saldo
 
         if excedeu_saldo:
-            print("\n@@@ Operação falhou! Você não tem saldo suficiente. @@@")
-
+            print("\n@@@ Operação falhou! Você não tem saldo suficiente. @@@")  # Mensagem de erro se o saldo for insuficiente
         elif valor_input is not None and valor_input > 0:
-            self._saldo -= valor_input
-            print("\n=== Saque realizado com sucesso! ===")
-            return True
-
+            self._saldo -= valor_input  # Deduz o valor do saldo
+            print("\n=== Saque realizado com sucesso! ===")  # Mensagem de sucesso
+            return True  # Retorna True indicando que o saque foi bem-sucedido
         else:
-            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
-
-        return False
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")  # Mensagem de erro se o valor for inválido
+        return False  # Retorna False indicando que o saque falhou
 
     def depositar(self, valor_input):
+        # Método para realizar um depósito
         if valor_input is not None and valor_input > 0:
-            self._saldo += valor_input
-            print("\n=== Depósito realizado com sucesso! ===")
+            self._saldo += valor_input  # Adiciona o valor ao saldo
+            print("\n=== Depósito realizado com sucesso! ===")  # Mensagem de sucesso
         else:
-            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")    # Mensagem de erro
             return False
 
         return True
 
-
+# classe ContaCorrente (filha de conta)
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
         super().__init__(numero, cliente)
@@ -127,7 +125,7 @@ class ContaCorrente(Conta):
             Titular:\t{self.cliente.nome}
         """
 
-
+# classe Historico
 class Historico:
     def __init__(self):
         self._transacoes = []
@@ -145,7 +143,7 @@ class Historico:
             }
         )
 
-
+# classe Transacao (pai)
 class Transacao(ABC):
     @property
     @abstractmethod
@@ -156,21 +154,8 @@ class Transacao(ABC):
     def registrar(self, conta):
         pass
 
-class Saque(Transacao):
-    def __init__(self, valor_input):
-        self._valor = valor_input
 
-    @property
-    def valor_input(self):
-        return self._valor_input
-
-    def registrar(self, conta):
-        sucesso_transacao = conta.sacar(self.valor_input)
-
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao(self)
-
-
+# classe Deposito (filha)
 class Deposito(Transacao):
     def __init__(self, valor_input):
         self._valor = valor_input
@@ -185,6 +170,7 @@ class Deposito(Transacao):
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
 
+# classe Saque (filha)
 class Saque(Transacao):
     def __init__(self, valor_input):
         self._valor = validar_valor(valor_input)  # Use a função de validação
@@ -200,21 +186,7 @@ class Saque(Transacao):
             conta.historico.adicionar_transacao(self)
 
 
-class Deposito(Transacao):
-    def __init__(self, valor_input):
-        self._valor = validar_valor(valor_input)  # Use a função de validação
-
-    @property
-    def valor(self):
-        return self._valor
-
-    def registrar(self, conta):
-        sucesso_transacao = conta.depositar(self.valor)
-
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao(self)
-
-
+# menu 
 def menu():
     menu = """\n
     ================ MENU ================
@@ -242,7 +214,7 @@ def recuperar_conta_cliente(cliente):
     # FIXME: não permite cliente escolher a conta
     return cliente.contas[0]
 
-
+# deposito
 def depositar(clientes):
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -250,7 +222,8 @@ def depositar(clientes):
     if not cliente:
         print("\n@@@ Cliente não encontrado! @@@")
         return
-
+    
+    # valor formatado
     valor_input = input("Informe o valor do depósito: ")
     transacao = Deposito(valor_input)
 
@@ -260,11 +233,12 @@ def depositar(clientes):
 
     cliente.realizar_transacao(conta, transacao)
 
-
+# sacar
 def sacar(clientes):
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
+    # testar se cliente
     if not cliente:
         print("\n@@@ Cliente não encontrado! @@@")
         return
@@ -278,7 +252,7 @@ def sacar(clientes):
 
     cliente.realizar_transacao(conta, transacao)
 
-
+# mostrar extrato no formato
 def exibir_extrato(clientes):
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -305,11 +279,12 @@ def exibir_extrato(clientes):
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
     print("==========================================")
 
-
+# criar cliente
 def criar_cliente(clientes):
     cpf = input("Informe o CPF (somente número): ")
     cliente = filtrar_cliente(cpf, clientes)
 
+    # testar se ja for cliente
     if cliente:
         print("\n@@@ Já existe cliente com esse CPF! @@@")
         return
@@ -324,28 +299,31 @@ def criar_cliente(clientes):
 
     print("\n=== Cliente criado com sucesso! ===")
 
-
+# criar conta
 def criar_conta(numero_conta, clientes, contas):
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
+    # se não for cliente
     if not cliente:
         print("\n@@@ Cliente não encontrado, fluxo de criação de conta encerrado! @@@")
         return
-
+    
+    # sendo cliente
     conta = ContaCorrente.nova_conta(cliente=cliente, numero=numero_conta)
     contas.append(conta)
     cliente.contas.append(conta)
 
     print("\n=== Conta criada com sucesso! ===")
 
-
+# listar contas
 def listar_contas(contas):
+    # iterar sobre contas
     for conta in contas:
         print("=" * 100)
         print(textwrap.dedent(str(conta)))
 
-
+# logica do menu
 def main():
     clientes = []
     contas = []
